@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="description" content="Web App Step-By-Step Part 2 - Docker">
+    <meta name="keywords" content="SETT, OCI, Docker, JavaScript, Node.js, PostgreSQL">
+    <meta name="author" content="R. Mark Volkmann">
+    <title>SETT ? 2017 - Web App Step-By-Step Part 2 - Docker</title>
+
+    <link rel="alternate" type="application/rss+xml" title="RSS" href="http://ociweb.com/sett/rss.xml">
+    <link rel="stylesheet" href="styles/SETT.css">
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+      code {
+        font-family: "Consolas", "Bitstream Vera Sans Mono", "Courier New", Courier, monospace !important;
+      }
+      img {
+        border: solid lightgray 2px;
+        margin-top: 10px;
+        padding: 5px;
+        width: 600px;
+      }
+    </style>
+
+    <link rel="stylesheet" href="syntaxhighlighter/dist/theme.css">
+    <script src="syntaxhighlighter/dist/syntaxhighlighter.js"></script>
+  </head>
+  <body>
+    <!--#include virtual="header.shtml" -->
+
+    <h1>Web App, Step By Step Part 2 - Docker</h1>
+
+    <p class="author">
+      by<br/>
+      R. Mark Volkmann
+      <br/>Object Computing, Inc. (OCI)
+    </p>
+
+    <h3>Introduction</h3>
+    <p>
+      In the first part of this article series we discussed creating
+      a web applicaiton using PostgreSQL, REST services, Express, and React.
+      In this part we will discuss deploying the app using Docker.
+      It is not necessary to read the first part if your primary interest
+      is learning about Docker.
+    </p>
+    <p>
+      The primary appeal of using Docker is that
+      "Dockerized" apps can run anywhere.
+      This includes Windows, Mac, and Linux.
+      Each platform must install Docker.
+    </p>
+    <p>
+      The most common use of Docker is to run server software.
+      For example, it could be used to run a web server or a REST server.
+    </p>
+    <p>
+      At a high level, the steps involved in using Docker include:
+    </p>
+    <ol>
+      <li>Create a file named "DockerFile" that describes an "image".</li>
+      <li>Build the image.</li>
+      <li>Run the image in a "container".</li>
+    </ol>
+    <p>
+      The example application we will deploy is avaiable at
+      <a href="https://github.com/mvolkmann/ice-cream-app" target="_blank">https://github.com/mvolkmann/ice-cream-app</a>.
+    </p>
+
+    <h3>Installing Docker</h3>
+    <p>
+    </p>
+    <h4>Installing in Windows</h4>
+    <h4>Installing in macOS</h4>
+    <p>
+      The steps are:
+    </p>
+    <ol>
+      <li>Browse https://docs.docker.com/docker-for-mac/</li>
+      <li>Download a .dmg file.</li>
+      <li>Double-click it.</li>
+      <li>In the install dialog, drag Docker.app to the Applications folder.</li>
+
+    </ol>
+    <p>
+      Can it also be installed using Homebrew?
+    </p>
+
+    <h4>Verifying the installation</h4>
+    <p>
+      The easiest way to verify that the installation was successful
+      is to download and run the "hello-world" image.
+      To this, enter the following command:
+    </p>
+    <pre class="brush: plain">
+      docker run hello-world</pre>
+
+    <h4>Installing in Linux</h4>
+
+    <h3>Docker images</h3>
+    <p>
+      A Docker image is a filesystem and
+      a set of parameters to use at runtime.
+      It doesn't have state and never changes.
+      Images can run a set of commands and exit,
+      but more commonly they continue running until stopped.
+      Examples include REST servers, web servers, and database daemons.
+      An image runs inside a container.
+    </p>
+    <p>
+      Images are described by and built from files
+      that, by convention, are named "Dockerfile.
+    </p>
+
+    <h3>Dockerfile contents</h3>
+    <p>
+    </p>
+
+    <h3>Dockerfile commands</h3>
+
+    <h3>Base images</h3>
+    <p>
+    </p>
+
+    <h4>Creating images</h4>
+    <p>
+      To build an image from a Dockerfile:
+    </p>
+    <pre class="brush: plain">
+      docker build [-t {name[:tag]}] {Dockerfile-path}</pre>
+    <p>
+      While the -t option can be omitted,
+      it is preferable to give a name to the image.
+      Otherwise it can only be identified by
+      the id that is automatically assigned.
+    </p>
+    <p>
+      Typically the "docker build" command is run
+      from the directory that contains Dockerfile.
+      When that is the case, the value for Dockerfile-path
+      can be a period representing the current directory.
+    </p>
+    <p>
+      If the base image identified in Dockerfile does not already
+      exist locally, its Dockerfile is downloaded from
+      <a href="https://hub.docker.com/" target="_blank">Docker Hub</a>.
+      Docker Hub is a repository of shared Docker images.
+      Next, the base image built.
+      The time required to do this depends on the base image,
+      but it is typically several minutes.
+      Subsequent builds of your images that use these base images
+      are much faster because locally installed base images are reused.
+    </p>
+    <p>
+      Examples of commonly used base images include
+      bash and node.  ADD MORE!
+    </p>
+
+    <h4>Listing existing images</h4>
+    <p>
+      To get a list of all exising images:
+    </p>
+    <pre class="brush: plain">
+      docker images</pre>
+
+    <h4>Tagging images</h4>
+    <p>
+      Images have unique ids which are SHA values.
+      These are long and difficult to type.
+      Tags are human readable aliases for image ids.
+      Any number of tags can be added to the same image.
+      To add a tag to an image:
+    </p>
+    <pre class="brush: plain">
+      docker tag {id-or-existing-name} {new-name}</pre>
+
+    <h4>Deleting images</h4>
+    <p>
+      To delete an images:
+    </p>
+    <pre class="brush: plain">
+      docker rmi [-f] {image-id-or-tag}</pre>
+    <p>
+      If an image has more than one tag,
+      deleting it by its id, requires using the -f option.
+    </p>
+    <p>
+      Deleting a tag only deletes the corresponding image
+      if it is the only tag for that image.
+    </p>
+
+    <h4>Dangling images</h4>
+    <p>
+      During iterative development it is common
+      to rebuild an image multiple times.
+      When an image with the same name as an existing one is built,
+      the previous version remains but is stripped of its name and tag.
+      These are referred to as "dangling images".
+      The following command deletes all of them:
+    </p>
+    <pre class="brush: plain">
+      docker rmi $(docker images -qa -f "dangling=true")</pre>
+    <p>
+      This uses two docker commands.
+      First, "docker images" is used to get a list of the ids
+      of all the dangling images.
+      Second, "docker rmi" is used to delete those images.
+      Why isn't there a build option to do this automatically?
+    </p>
+
+    <h3>Docker containers</h3>
+    <p>
+      A container is a running instance of an image.
+    </p>
+
+    <h4>Creating/Running containers</h4>
+    <h4>Restarting containers</h4>
+    <h4>Rerunning containers</h4>
+    <h4>Deleting containers</h4>
+    docker rm {container-ids}
+    A space-separated list of container id prefixes.
+
+    <h3>Sharing Image</h3>
+    <p>
+      The easiest way to share a Docker image
+      is to share its Dockerfile.
+      The recipient can build this image from that.
+    </p>
+    <p>
+      Another alternative is to register for a
+      <a href="https://hub.docker.com/" target="_blank">Docker Hub</a>
+      account and upload your image there.
+      From here you can browse for shared, downloadable images.
+      For example, docker/whalesay.
+    </p>
+    <p>
+      Some images are labelled as "official".
+      For details on what this means, see
+      <a href="https://github.com/docker-library/official-images" target="_blank">https://github.com/docker-library/official-images</a>.
+      For a list of the official images, sorted on the number of times they have been "pulled", see
+      <a href="https://hub.docker.com/explore/" target="_blank">https://hub.docker.com/explore/</a>.
+    </p>
+    <p>
+      Official programming language images include
+      clojure, elixir, erlang, haskell, ibmjava, julia,
+      gcc, golang, java, jruby, node, openjdk, perl,
+      php, python, ruby, and swift.
+    </p>
+    <p>
+      Official web server images include
+      glassfish, httpd (Apache), jetty, nginx, and tomcat.
+    </p>
+    <p>
+      Official database images include
+      cassandra, couchbase, couchdb, mariadb, mongo, mongoexpress,
+      mysql, neo4j, oraclelinux, postgres, redis, and rethinkdb.
+    </p>
+    <p>
+      Official Linux images include
+      debian, centos, fedora, opensuse, and ubuntu.
+    </p>
+    <p>
+      Other official images of note include
+      bash, drupal, hello-world, jenkins, maven, rails,
+      redmine, and wordpress.
+    </p>
+
+    <h3>Sample Application</h3>
+
+    <h3>Summary</h3>
+    <p>
+    </p>
+  </body>
+</html>
