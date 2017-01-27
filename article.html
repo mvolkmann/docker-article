@@ -49,6 +49,8 @@
       "Dockerized" apps can run anywhere.
       This includes Windows, Mac, and Linux.
       Each platform must install Docker.
+      Applications run in a virtual Linux environment.
+      Many Linux variants are supported.
     </p>
     <p>
       The most common use of Docker is to run server software.
@@ -63,7 +65,7 @@
       <li>Run the image in a "container".</li>
     </ol>
     <p>
-      The example application we will deploy is avaiable at
+      The example application we will deploy is avaialable at
       <a href="https://github.com/mvolkmann/ice-cream-app" target="_blank">https://github.com/mvolkmann/ice-cream-app</a>.
     </p>
 
@@ -94,6 +96,21 @@
     </p>
     <pre class="brush: plain">
       docker run hello-world</pre>
+    <p>
+      This will output information related to downloading the image,
+      "Hello from Docker!", and information to help you get started
+      using Docker.
+      It also results in creation of an image and a container.
+    </p>
+    <p>
+      To see the new image, enter "docker images".
+    </p>
+    <p>
+      To see the new container, enter "docker ps -a".
+    </p>
+    <p>
+      To run the container again, enter "docker start -a {container-id}".
+    </p>
 
     <h4>Installing in Linux</h4>
 
@@ -109,14 +126,249 @@
     </p>
     <p>
       Images are described by and built from files
-      that, by convention, are named "Dockerfile.
+      that, by convention, are named "Dockerfile".
+      When building an image, the -f option of the build commmand
+      can be used to use a file with a different name.
+    </p>
+
+    <h3>Official Base Images</h3>
+    <p>
+      Some images are labelled as "official".
+      For details on what this means, see
+      <a href="https://github.com/docker-library/official-images" target="_blank">https://github.com/docker-library/official-images</a>.
+      For a list of the official images, sorted on the number of times they have been "pulled", see
+      <a href="https://hub.docker.com/explore/" target="_blank">https://hub.docker.com/explore/</a>.
+    </p>
+    <p>
+      Official programming language images include
+      clojure, elixir, erlang, haskell, ibmjava, julia,
+      gcc, golang, java, jruby, node, openjdk, perl,
+      php, python, ruby, and swift.
+    </p>
+    <p>
+      Official web server images include
+      glassfish, httpd (Apache), jetty, nginx, and tomcat.
+    </p>
+    <p>
+      Official database images include
+      cassandra, couchbase, couchdb, mariadb, mongo, mongoexpress,
+      mysql, neo4j, oraclelinux, postgres, redis, and rethinkdb.
+    </p>
+    <p>
+      Official Linux images include
+      debian, centos, fedora, opensuse, and ubuntu.
+    </p>
+    <p>
+      Other official images of note include
+      bash, drupal, hello-world, jenkins, maven, rails,
+      redmine, and wordpress.
+    </p>
+
+    <h3>High-level walkthrough</h3>
+    <p>
+      Before diving into details about Docker, let's walk through some simple examples.
+    </p>
+    <p>
+      We should only have one image now.
+      That is the one created while verifying the installation.
+      Verify this by running <code>docker images</code>.
+    </p>
+    <pre class="brush: plain">
+FROM bash
+CMD echo Hello, World!</pre>
+    <p>
+      Let's create a very simple image that just outputs "Hello, World!" using bash.
+      Here is the Dockerfile that describes the images.
+    </p>
+    <p>
+      To build this image, enter "docker build -t my-demo .".
+      Because we didn't already have the "bash" base image,
+      that was downloaded and built.
+      To see all the current images, enter "docker images".
+      We should have three images now.
+      They are "hello-world", "bash", and "my-demo".
+      To run the "my-demo" image, enter "docker run my-demo".
+      This runs the image in a newly created container.
+      The container still exists.
+      To see this, enter "docker ps -a".
+      To run this container again, enter "docker run -a {container-id}".
+      To delete this container, enter "docker rm {container-id-prefix}".
+      To delete the "my-demo" image, enter "docker rmi my-demo".
+      Note that the "bash" image on which it depended was not deleted,
+      but it can be deleted with "docker rmi bash".
+      It is common to create multiple images that use the same base image.
+      Base images can be used by multiple custom images.
+    </p>
+    <p>
+      Now lets create an image that outputs "Hello, World!" using Node.js.
+      It uses the "chalk" npm package to output colored text.
+      We are doing this to illustrate using npm packages from a Docker image.
+      Here is the JavaScript code from a file named <code>index.js</code>.
+    </p>
+    <pre class="brush: plain">
+const chalk = require('chalk');
+
+// process.argv holds command-line arguments.
+// The first value is the path to the node executable.
+// The second value is the path to the file being executed.
+// The third value (at index 2) is the first command-line argument.
+const name = process.argv[2] || 'World';
+console.log('Hello, ' + chalk.red.bold(name) + '!');</pre>
+
+    <p>
+      We need a package.json file to describe dependencies,
+      and it can also specify a "script" for running the application.
+    </p>
+    <pre class="brush: plain">
+{
+  "name": "chalk-demo",
+  "version": "1.0.0",
+  "description": "Demonstrates use of the chalk npm package",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^1.1.3"
+  }
+}</pre>
+
+    <p>
+      To run this Node application outside of Docker
+      with no excess output from npm,
+      enter "npm -s start".
+      Note how "World" is output in red.
+    </p>
+
+    <p>
+      Here is a Dockerfile that describes the image to be built.
+      It specifies a specific version of Node, 7.4.
+      An alternative it to request teh latest long-term support (LTS) version
+      by replacing the version number with the code name "boron".
+    </p>
+    <pre class="brush: plain">
+FROM node:7.4-onbuild
+CMD ["npm", "--silent", "start"]</pre>
+
+    <p>
+      Using an "onbuild" tag of the node base image causes the following
+      to happen automatically when the image is run:
+    </p>
+    <ul>
+      <li>Assume the current directory contains package.json.</li>
+      <li>Run "npm install" which installs the dependencies described in package.json.</li>
+      <li>Assume package.json defines a "start" script.</li>
+      <li>Run "npm start".</li>
+    </ul>
+    <p>
+      The CMD instruction in the Dockerfile above overrides the
+      one provided by node onbuild to use the --silent option.
+      This suppresses informational messages from Docker.
+    </p>
+    <p>
+      To build the Docker image, enter "docker build -t node-demo .".
+      This will take several minutes because it needs to
+      download and build the "node" base image.
+      After this, rebuilding this image,
+      or other images that use the node base image,
+      will build much faster.
+    </p>
+    <p>
+      To run this image, but not retain the container in which it runs,
+      enter "docker run -t --rm node-demo".
+      The <code>-t</code> option tells Docker to run the image in a pseudo-TTY
+      which is able to process the ANSI escape codes
+      output by the chalk package to produce colored text.
+      The <code>--rm</code> option tells Docker not to retain
+      the container it creates after the image exits.
+    </p>
+
+    <p>
+      Now lets create an image that runs an Express server using Node.js.
+    </p>
+    <p>
+      TODO: ADD THIS!
     </p>
 
     <h3>Dockerfile contents</h3>
     <p>
+      Dockerfiles contain instructions that describe an image to be built.
+      Each instruction is on a separate line.
+      They start with an instruction name followed by its arguments.
+      Instruction names are not case sensitive, but
+      the convention is for them to be all uppercase.
+      To spread arguments over several lines,
+      end all but the last line with a backslash like in Bash.
+      Comments are lines that begin with <code>#</code>.
+      Comments cannot appear at the ends of instructions.
     </p>
 
-    <h3>Dockerfile commands</h3>
+    <h3>Dockerfile instructions</h3>
+    <p>
+      Each instruction runs independently in a new image created just for it,
+      or ones from previous builds that are in the "build cache".
+      Previous commands do not affect subsequent ones.
+      For example, "RUN cd /usr/local" will not change
+      the working directory used by the next instruction.
+    </p>
+
+    <h4>FROM</h4>
+    <p>
+      This specifies the base image.
+      It is required and MUST be the first instruction.
+    </p>
+
+    <h4>ENV</h4>
+    <p>
+      This instruction sets the value of an environment variable
+      that is used inside the Dockerfile.
+      It cannot be used to change the value
+      of a previously set environment variable.
+      For example, to set ANIMAL to GIRAFFE,
+    </p>
+    <pre class="brush: plain">
+ENV animal giraffe</pre>
+    <p>
+      To refer to this enviroment variable in another instruction,
+      use <code>${ANIMAL}</code> or <code>$ANIMAL</code>.
+    </p>
+    <p>
+      Instructions that support references to environment variables include:
+      <code>ADD</code>, <code>COPY</code>, <code>ENV</code>, <code>EXPOSE</code>,
+      <code>LABEL</code>, <code>ONBUILD</code>, <code>STOPSIGNAL</code>,
+      <code>USER</code>, <code>VOLUME</code>, and <code>WORKDIR</code>.
+    </p>
+
+    <h4>MAINTAINER</h4>
+
+    <h4>WORKDIR</h4>
+    <p>
+      This sets the default working directory from which commands will execute.
+      It defaults to "/".
+    </p>
+
+    <h4>RUN</h4>
+
+    <h4>CMD</h4>
+
+    <h4>PATH</h4>
+    <p>
+      This specifies a local filesystem path that will be in the context of the image.
+      This should expose only the files needed by the image.
+      For example, do not use /.
+      A .dockerignore file can be added to any directory
+      to specify files that should not be exposed to the image.
+    </p>
+
+    <h4>URL</h4>
+    <p>
+      This specifies a Github repository whose files will be in the context of the image.
+    </p>
+
+    <h4>COPY</h4>
+
+    <h4>WORKPATH</h4>
 
     <h3>Base images</h3>
     <p>
@@ -127,12 +379,13 @@
       To build an image from a Dockerfile:
     </p>
     <pre class="brush: plain">
-      docker build [-t {name[:tag]}] {Dockerfile-path}</pre>
+      docker build [-t {tag}] {Dockerfile-path}</pre>
     <p>
-      While the -t option can be omitted,
-      it is preferable to give a name to the image.
-      Otherwise it can only be identified by
+      While the -t option can be omitted, it is preferable include it.
+      Otherwise the image can only be identified by
       the id that is automatically assigned.
+      A tag consists of a name and an an optional version separated from the name by a colon.
+      For example, <code>my-project:1.2</code>
     </p>
     <p>
       Typically the "docker build" command is run
@@ -176,18 +429,38 @@
 
     <h4>Deleting images</h4>
     <p>
-      To delete an images:
+      To delete an image:
     </p>
     <pre class="brush: plain">
-      docker rmi [-f] {image-id-or-tag}</pre>
+      docker rmi [-f] {image-id-prefix-or-tag}</pre>
     <p>
-      If an image has more than one tag,
-      deleting it by its id, requires using the -f option.
+      If an image has a tag other than "latest",
+      deleting it requires specifying both the name and tag like this:
+    </p>
+    <p>
+      If the image is used by an existing container,
+      an error message explaining this will be output.
+      The image can be deleted anyway if the -f option is used.
+      Containers whose images have been deleted can still be rerun
+      because all images it requires were copied into it.
+    </p>
+    <pre class="brush: plain">
+      docker rmi [-f] {name}:{tag}</pre>
+    <p>
+      There are multiple versions of an image, eash with a different tag,
+      deleting one by its id, requires using the -f option.
     </p>
     <p>
       Deleting a tag only deletes the corresponding image
-      if it is the only tag for that image.
+      if it is the only tag for that image. ???
     </p>
+    <p>
+      Here is a bash script that deletes all images.
+    </p>
+    <pre class="brush: plain">
+#!/bin/bash
+# Removes all images.
+docker rmi -f $(docker images -q)</pre>
 
     <h4>Dangling images</h4>
     <p>
@@ -208,17 +481,88 @@
       Why isn't there a build option to do this automatically?
     </p>
 
-    <h3>Docker containers</h3>
+    <h3>Docker Containers</h3>
     <p>
       A container is a running instance of an image.
     </p>
 
     <h4>Creating/Running containers</h4>
+
+    <h4>Listing containers</h4>
+    <p>
+      To list the current running containers,
+      enter: <code>docker ps</code>.
+      To list all containers including those that are stopped,
+      enter: <code>docker ps -a</code>.
+    </p>
+
+    <h4>Getting container details</h4>
+    <p>
+      To see details about an existing container,
+      enter: <code>docker inspect {container-id}</code>.
+    </p>
+
     <h4>Restarting containers</h4>
+    <p>
+      To restart a container whose image is currently running,
+    </p>
+    <pre class="brush: plain">
+      docker restart {container-id}</pre>
+
     <h4>Rerunning containers</h4>
+    <p>
+      To rerun a container whose image has exited,
+    </p>
+    <pre class="brush: plain">
+      docker start -a {container-id}</pre>
+    <p>
+      This works even if the images used by the container have been deleted
+      because the images have already been copied into the container.
+    </p>
+
     <h4>Deleting containers</h4>
-    docker rm {container-ids}
-    A space-separated list of container id prefixes.
+    <p>
+      To delete specific containers, enter "docker rm {container-ids}".
+      A space-separated list of container id prefixes can be specified.
+      Each id prefix must uniquely match a single container.
+    </p>
+    <p>
+      To delete all containers, enter "docker rm $(docker ps -qa)".
+    </p>
+
+    <h4>Opening a shell inside a running container</h4>
+    <p>
+    </p>
+    <pre class="brush: plain">
+      docker exec -it {container-id} /bin/sh</pre>
+    <p>
+      Here is a bash script that deletes all containers.
+    </p>
+    <pre class="brush: plain">
+#!/bin/bash
+# Removes all containers.
+docker rm $(docker ps -qa)</pre>
+
+    <h3>Volumes</h3>
+    <p>
+      Containers can also provide read-write access to the read-only image filesystem
+      a "Union File System".
+      Changes to files happens in the container, but are not saved in the image.
+      "Volumes" allow these changes to be persisted to the local filesystem.
+    </p>
+    <p>
+      To specify a volume to be used by a container,
+      use the -v option of the docker run command as follows:
+    </p>
+    <pre class="brush: plain">
+      docker run {image-name} -v $(pwd):{directory}</pre>
+    brush
+    <p>
+      It should be possible to edit files under a volume directory
+      and have the image in the container utilize the changes
+      without restarted it.  TRY THIS!
+      See https://dzone.com/articles/docker-for-devs-creating-a-developer-image?edition=264895&utm_source=Spotlight&utm_medium=email&utm_campaign=cloud%202017-01-24
+    </p>
 
     <h3>Sharing Image</h3>
     <p>
@@ -232,37 +576,6 @@
       account and upload your image there.
       From here you can browse for shared, downloadable images.
       For example, docker/whalesay.
-    </p>
-    <p>
-      Some images are labelled as "official".
-      For details on what this means, see
-      <a href="https://github.com/docker-library/official-images" target="_blank">https://github.com/docker-library/official-images</a>.
-      For a list of the official images, sorted on the number of times they have been "pulled", see
-      <a href="https://hub.docker.com/explore/" target="_blank">https://hub.docker.com/explore/</a>.
-    </p>
-    <p>
-      Official programming language images include
-      clojure, elixir, erlang, haskell, ibmjava, julia,
-      gcc, golang, java, jruby, node, openjdk, perl,
-      php, python, ruby, and swift.
-    </p>
-    <p>
-      Official web server images include
-      glassfish, httpd (Apache), jetty, nginx, and tomcat.
-    </p>
-    <p>
-      Official database images include
-      cassandra, couchbase, couchdb, mariadb, mongo, mongoexpress,
-      mysql, neo4j, oraclelinux, postgres, redis, and rethinkdb.
-    </p>
-    <p>
-      Official Linux images include
-      debian, centos, fedora, opensuse, and ubuntu.
-    </p>
-    <p>
-      Other official images of note include
-      bash, drupal, hello-world, jenkins, maven, rails,
-      redmine, and wordpress.
     </p>
 
     <h3>Sample Application</h3>
