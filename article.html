@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta name="description" content="Web App Step-By-Step Part 2 - Docker">
-    <meta name="keywords" content="SETT, OCI, Docker, JavaScript, Node.js, PostgreSQL">
+    <meta name="description" content="Docker Step by Step">
+    <meta name="keywords" content="SETT, OCI, Docker, JavaScript, Node.js, Express">
     <meta name="author" content="R. Mark Volkmann">
-    <title>SETT ? 2017 - Web App Step-By-Step Part 2 - Docker</title>
+    <title>SETT ? 2017 - Docker Step by Step</title>
 
     <link rel="alternate" type="application/rss+xml" title="RSS" href="http://ociweb.com/sett/rss.xml">
     <link rel="stylesheet" href="styles/SETT.css">
@@ -13,6 +13,10 @@
     <style>
       code {
         font-family: "Consolas", "Bitstream Vera Sans Mono", "Courier New", Courier, monospace !important;
+      }
+      h3 {
+        border-top: solid red 3px;
+        padding-top: 10px;
       }
       img {
         border: solid lightgray 2px;
@@ -28,7 +32,7 @@
   <body>
     <!--#include virtual="header.shtml" -->
 
-    <h1>Web App, Step By Step Part 2 - Docker</h1>
+    <h1>Docker Step By Step</h1>
 
     <p class="author">
       by<br/>
@@ -37,13 +41,6 @@
     </p>
 
     <h3>Introduction</h3>
-    <p>
-      In the first part of this article series we discussed creating
-      a web applicaiton using PostgreSQL, REST services, Express, and React.
-      In this part we will discuss deploying the app using Docker.
-      It is not necessary to read the first part if your primary interest
-      is learning about Docker.
-    </p>
     <p>
       The primary appeal of using Docker is that
       "Dockerized" apps can run anywhere.
@@ -60,61 +57,71 @@
       At a high level, the steps involved in using Docker include:
     </p>
     <ol>
-      <li>Create a file named "DockerFile" that describes an "image".</li>
+      <li>Create a file named <code>DockerFile</code> that describes an "image".</li>
       <li>Build the image.</li>
       <li>Run the image in a "container".</li>
     </ol>
-    <p>
-      The example application we will deploy is avaialable at
-      <a href="https://github.com/mvolkmann/ice-cream-app" target="_blank">https://github.com/mvolkmann/ice-cream-app</a>.
-    </p>
 
     <h3>Installing Docker</h3>
 
     <h4>Installing in Windows</h4>
     <p>
-      TODO: ADD THIS!
+      The steps are:
     </p>
+    <ol>
+      <li>Browse <a href="https://docs.docker.com/docker-for-windows/" target="_blank">https://docs.docker.com/docker-for-windows/</a>.</li>
+      <li>Scroll to and click "Get Docker for Windows (stable)" to download a <code>.msi</code> file.</li>
+      <li>Double-click the downloaded .msi file and follow the instructions.</li>
+    </ol>
 
     <h4>Installing in macOS</h4>
     <p>
       The steps are:
     </p>
     <ol>
-      <li>Browse https://docs.docker.com/docker-for-mac/</li>
-      <li>Download a .dmg file.</li>
-      <li>Double-click it.</li>
+      <li>Browse <a href="https://docs.docker.com/docker-for-mac/" target="_blank">https://docs.docker.com/docker-for-mac/</a>.</li>
+      <li>Scroll to and click "Get Docker for Mac (stable)" to download a .dmg file.</li>
+      <li>Double-click the download <code>.dmg</code> file.</li>
       <li>In the install dialog, drag Docker.app to the Applications folder.</li>
     </ol>
     <p>
-      Can it also be installed using Homebrew?
+      It is also possible to install Docker in macOS using Homebrew,
+      but it requires more steps.  See
+      <a href="https://nickcharlton.net/posts/docker-via-homebrew.html" target="_blank">https://nickcharlton.net/posts/docker-via-homebrew.html</a>.
+    </p>
+
+    <h4>Installing in Linux</h4>
+    <p>
+      Instructions vary based on the Linux distribution being used.
+      See <a href="https://docs.docker.com/engine/installation/linux/" target="_blank">https://docs.docker.com/engine/installation/linux/</a>.
     </p>
 
     <h4>Verifying the installation</h4>
     <p>
       The easiest way to verify that the installation was successful
       is to download and run the "hello-world" image.
-      To this, enter the following command:
-    </p>
-    <pre class="brush: plain">
-      docker run hello-world</pre>
-    <p>
-      This will output information related to downloading the image,
-      "Hello from Docker!", and information to help you get started
-      using Docker.
+      To do this enter: <code>docker run hello-world</code>.
+      This will download the image, and output
+      information related to the download,
+      the line "<code>Hello from Docker!</code>",
+      and information to help you get started using Docker.
       It also results in creation of an image and a container.
     </p>
     <p>
-      To see the new image, enter "docker images".
+      To see the new image enter: <code>docker images</code>
     </p>
     <p>
-      To see the new container, enter "docker ps -a".
+      To see the new container enter: <code>docker ps -a</code>
     </p>
     <p>
-      To run the container again, enter "docker start -a {container-id}".
+      To run the container again enter: <code>docker start -a {container-id-prefix}</code>
     </p>
-
-    <h4>Installing in Linux</h4>
+    <p>
+      To get help on a docker command enter: <code>docker help {command}</code>.
+      For example, <code>docker help start</code>
+      briefly describes the -a option.
+      It is used to attach to an existing container.
+    </p>
 
     <h3>Docker images</h3>
     <p>
@@ -123,14 +130,15 @@
       It doesn't have state and never changes.
       Images can run a set of commands and exit,
       but more commonly they continue running until stopped.
-      Examples include REST servers, web servers, and database daemons.
+      Examples include web servers, REST servers, and database daemons.
       An image runs inside a container.
     </p>
     <p>
       Images are described by and built from files
-      that, by convention, are named "Dockerfile".
-      When building an image, the -f option of the build commmand
-      can be used to use a file with a different name.
+      that, by convention, are named "<code>Dockerfile</code>".
+      When building an image, the <code>-f</code> option
+      of the <code>docker build</code> commmand
+      can be specified to use a file with a different name.
     </p>
 
     <h3>Official Base Images</h3>
@@ -166,7 +174,7 @@
       redmine, and wordpress.
     </p>
 
-    <h3>High-level walkthrough</h3>
+    <h3>Examples</h3>
     <p>
       Before diving into details about Docker, let's walk through some simple examples.
     </p>
@@ -175,39 +183,53 @@
       That is the one created while verifying the installation.
       Verify this by running <code>docker images</code>.
     </p>
+
+    <h4>Bash example</h4>
+    <p>
+      Let's create a very simple image that just outputs "Hello, World!" using bash.
+      Here is the Dockerfile that describes the image.
+    </p>
     <pre class="brush: plain">
 FROM bash
 CMD echo Hello, World!</pre>
     <p>
-      Let's create a very simple image that just outputs "Hello, World!" using bash.
-      Here is the Dockerfile that describes the images.
+      To build this image enter: <code>docker build -t my-demo .</code><br>
+      Because we didn't already have the <code>bash</code> base image,
+      that was downloaded and built.
     </p>
     <p>
-      To build this image, enter "docker build -t my-demo .".
-      Because we didn't already have the "bash" base image,
-      that was downloaded and built.
-      To see all the current images, enter "docker images".
-      We should have three images now.
-      They are "hello-world", "bash", and "my-demo".
-      To run the "my-demo" image, enter "docker run my-demo".
+      To see all the current images enter: <code>docker images</code><br>
+      We should have three images now.  They are
+      <code>hello-world</code>, <code>bash,</code> and <code>my-demo</code>.
+    </p>
+    <p>
+      To run the <code>my-demo</code> image enter: <code>docker run my-demo</code><br>
       This runs the image in a newly created container.
       The container still exists.
-      To see this, enter "docker ps -a".
-      To run this container again, enter "docker run -a {container-id}".
-      To delete this container, enter "docker rm {container-id-prefix}".
-      To delete the "my-demo" image, enter "docker rmi my-demo".
-      Note that the "bash" image on which it depended was not deleted,
-      but it can be deleted with "docker rmi bash".
-      It is common to create multiple images that use the same base image.
-      Base images can be used by multiple custom images.
+    </p>
+    <p>
+      To see this enter: <code>docker ps -a</code>
+    </p>
+    <p>
+      To run this container again enter: <code>docker run -a {container-id}</code>
+    </p>
+    <p>
+      To delete this container enter: <code>docker rm {container-id-prefix}</code>
+    </p>
+    <p>
+      To delete the <code>my-demo</code> image enter: <code>docker rmi my-demo</code><br>
+      Note that the <code>bash</code> image on which it depended was not deleted,
+      but it can be deleted with <code>docker rmi bash</code>.
+      It is common to create multiple images that use the same base image
+      and retain these rather than delete them.
     </p>
 
+    <h4>Node example</h4>
     <p>
-      Now lets create an image that outputs "Hello, World!" using Node.js.
+      Now let's create an image that outputs "<code>Hello, World!</code>" using Node.js.
       It uses the "chalk" npm package to output colored text.
       We are doing this to illustrate using npm packages from a Docker image.
     </p>
-
     <p>
       Here is the <code>package.json</code> file that describes dependencies.
       It can also specify a "script" for running the application.
@@ -230,7 +252,7 @@ CMD echo Hello, World!</pre>
     <p>
       Here is the JavaScript code from the file <code>index.js</code>.
     </p>
-    <pre class="brush: plain">
+    <pre class="brush: javascript">
 const chalk = require('chalk');
 
 // process.argv holds command-line arguments.
@@ -248,9 +270,9 @@ console.log('Hello, ' + chalk.red.bold(name) + '!');</pre>
     </p>
 
     <p>
-      Here is a Dockerfile that describes the image to be built.
+      Here is the Dockerfile that describes the image to be built.
       It specifies a specific version of Node, 7.4.
-      An alternative it to request teh latest long-term support (LTS) version
+      An alternative it to request the latest long-term support (LTS) version
       by replacing the version number with the code name "boron".
     </p>
     <pre class="brush: plain">
@@ -258,44 +280,52 @@ FROM node:7.4-onbuild
 CMD ["npm", "--silent", "start"]</pre>
 
     <p>
-      Using an "onbuild" tag of the node base image causes the following
-      to happen automatically when the image is run:
+      Base images with an "<code>onbuild"</code> tag
+      use <code>ONBUILD</code> instructions to specify
+      instructions to be executed when the using image is executed.
+      These instructions are executed as if were inserted
+      immediately after the FROM instruction.
+      In the case of node onbuild images, the following
+      happens automatically when the image is executed:
     </p>
     <ul>
-      <li>Assume the current directory contains package.json.</li>
-      <li>Run "npm install" which installs the dependencies described in package.json.</li>
-      <li>Assume package.json defines a "start" script.</li>
-      <li>Run "npm start".</li>
+      <li>Assume the current directory contains a <code>package.json</code> file.</li>
+      <li>Run <code>npm install</code> which installs the dependencies
+        described in <code>package.json</code>.</li>
+      <li>Assume <code>package.json</code> defines
+        a <code>start</code> script.</li>
+      <li>Run <code>npm start</code>.</li>
     </ul>
     <p>
-      The CMD instruction in the Dockerfile above overrides the
-      one provided by node onbuild to use the --silent option.
-      This suppresses informational messages from Docker.
+      The CMD instruction in the Dockerfile above overrides the one provided
+      by the <code>node onbuild</code> image to use the <code>--silent</code> option.
+      This suppresses informational messages from npm.
     </p>
     <p>
-      To build the Docker image, enter "docker build -t node-demo .".
+      To build the Docker image enter: <code>docker build -t node-demo .</code><br>
       This will take several minutes because it needs to
-      download and build the "node" base image.
-      After this, rebuilding this image,
-      or other images that use the node base image,
+      download and build the <code>node</code> base image.
+      Once the base image has been built, rebuilding this image,
+      or other images that use the same base image,
       will build much faster.
     </p>
     <p>
       To run this image, but not retain the container in which it runs,
-      enter "docker run -t --rm node-demo".
+      enter <code>docker run -t --rm node-demo</code><br>
       The <code>-t</code> option tells Docker to run the image in a pseudo-TTY
       which is able to process the ANSI escape codes
-      output by the chalk package to produce colored text.
+      output by the <code>chalk</code> package to produce colored text.
       The <code>--rm</code> option tells Docker not to retain
       the container it creates after the image exits.
     </p>
 
+    <h4>Express example</h4>
     <p>
-      Now lets create an image that runs an Express server using Node.js.
+      Now let's create an image that runs an Express HTTP server using Node.js.
     </p>
     <p>
       Here is the <code>package.json</code> file that describes dependencies.
-      It can also specify a "script" for running the application.
+      It also specifies a <code>script</code> for running the application.
     </p>
     <pre class="brush: plain">
 {
@@ -315,7 +345,7 @@ CMD ["npm", "--silent", "start"]</pre>
     <p>
       Here is the JavaScript code from the file <code>index.js</code>.
     </p>
-    <pre class="brush: plain">
+    <pre class="brush: javascript">
 const express = require('express');
 
 const app = express();
@@ -330,40 +360,40 @@ app.listen(port, () => console.log('listening on port', port));</pre>
 
     <p>
       To run this Node application outside of Docker
-      enter <code>npm start</code>
+      enter <code>npm start</code><br>
       and browse <code>localhost:3000/hello?name={your-first-name}</code>.
     </p>
 
     <p>
-      Here is a Dockerfile that describes the image to be built.
+      Here is the <code>Dockerfile</code> that describes the image to be built.
     </p>
     <pre class="brush: plain">
 FROM node:7.4-onbuild
 EXPOSE 3000</pre>
     <p>
-      To build this image, enter: <code>docker build -t express-demo .</code>
+      To build this image enter: <code>docker build -t express-demo .</code>
     </p>
     <p>
-      When a container expose ports using the EXPOSE instruction,
+      When a container exposes ports using the EXPOSE instruction,
       these ports are only available to processes running in the container.
       To use them outside of the container (in the host),
       they must be mapped to a host port.
       This is specified with the <code>--publish</code> or <code>-p</code> option.
-      For example, <code>-p 3001:3000</code> specifies that port 8080
-      inside the container is mapped to the host port 3000.
+      For example, <code>-p 3001:3000</code> specifies that port 3000
+      inside the container is mapped to the host port 3001.
       The same port number can be used for both if
       the container port isn't already in use on the host.
     </p>
     <p>
-      To run this image in a container, enter:
-      <code>docker run -d -p 3000:3000 express-demo</code>
+      To run this image in a container enter:
+      <code>docker run -d -p 3000:3000 express-demo</code><br>
       The <code>-d</code> option causes the container
       to run in the background (detached mode).
       Do not include the <code>--rm</code> option when using this.
     </p>
     <p>
       To output log messages from container enter:
-      <code>docker logs {container-id-prefix}</code>.
+      <code>docker logs {container-id-prefix}</code><br>
       This is a great way to diagnose issues.
     </p>
     <p>
@@ -605,12 +635,12 @@ docker rmi -f $(docker images -q)</pre>
 
     <h4>Deleting containers</h4>
     <p>
-      To delete specific containers, enter "docker rm {container-ids}".
+      To delete specific containers enter "docker rm {container-ids}".
       A space-separated list of container id prefixes can be specified.
       Each id prefix must uniquely match a single container.
     </p>
     <p>
-      To delete all containers, enter "docker rm $(docker ps -qa)".
+      To delete all containers enter "docker rm $(docker ps -qa)".
     </p>
 
     <h4>Opening a shell inside a running container</h4>
