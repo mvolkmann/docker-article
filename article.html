@@ -259,7 +259,7 @@ const chalk = require('chalk');
 // The first value is the path to the node executable.
 // The second value is the path to the file being executed.
 // The third value (at index 2) is the first command-line argument.
-const name = process.argv[2] || 'World';
+const name = process.argv[2] || process.env.name || 'World';
 console.log('Hello, ' + chalk.red.bold(name) + '!');</pre>
 
     <p>
@@ -277,6 +277,7 @@ console.log('Hello, ' + chalk.red.bold(name) + '!');</pre>
     </p>
     <pre class="brush: plain">
 FROM node:7.4-onbuild
+ENV name ""
 CMD ["npm", "--silent", "start"]</pre>
 
     <p>
@@ -317,6 +318,13 @@ CMD ["npm", "--silent", "start"]</pre>
       output by the <code>chalk</code> package to produce colored text.
       The <code>--rm</code> option tells Docker not to retain
       the container it creates after the image exits.
+      Note that it is preceded by two dashes, not one.
+    </p>
+    <p>
+      To override the value of the <code>name</code> environment variable
+      specified in <code>Dockerfile</code> and <code>index.js</code>,
+      add "<code>-e name={value}</code>" to the <code>docker run</code> command.
+      For example, <code>docker run -t --rm -e name=Mark node-demo</code>
     </p>
 
     <h4>Express example</h4>

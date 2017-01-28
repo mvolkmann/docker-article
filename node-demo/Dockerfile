@@ -6,6 +6,8 @@
 # * Run "npm start".
 FROM node:7.4-onbuild
 
+ENV name World
+
 # Override the command provided by node onbuild
 # to run npm start with the --silent option.
 CMD ["npm", "--silent", "start"]
