@@ -1,0 +1,5 @@
+FROM bash
+MAINTAINER R. Mark Volkmann
+#RUN echo "Hello, run!"
+#CMD echo "Hello, cmd!"
+CMD ["/bin/echo", "Hello, World!"]

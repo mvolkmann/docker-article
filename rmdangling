@@ -1,0 +1,6 @@
+#!/bin/bash
+# Removes all "dangling images"
+# which are those that have no name or tag.
+# This happens when an exiting image is rebuilt.
+# The new version gets the name and the old version loses it.
+docker rmi $(docker images -qa -f "dangling=true")

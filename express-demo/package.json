@@ -1,0 +1,14 @@
+{
+  "name": "express-demo",
+  "version": "1.0.0",
+  "description": "a Hello World Express app",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "R. Mark Volkmann <r.mark.volkmann@gmail.com> (http://ociweb.com/mark)",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.14.0"
+  }
+}

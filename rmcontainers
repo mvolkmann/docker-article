@@ -1,0 +1,3 @@
+#!/bin/bash
+# Removes all containers, including running ones.
+docker rm -f $(docker ps -qa)

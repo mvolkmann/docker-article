@@ -70,9 +70,12 @@
     </p>
 
     <h3>Installing Docker</h3>
-    <p>
-    </p>
+
     <h4>Installing in Windows</h4>
+    <p>
+      TODO: ADD THIS!
+    </p>
+
     <h4>Installing in macOS</h4>
     <p>
       The steps are:
@@ -82,7 +85,6 @@
       <li>Download a .dmg file.</li>
       <li>Double-click it.</li>
       <li>In the install dialog, drag Docker.app to the Applications folder.</li>
-
     </ol>
     <p>
       Can it also be installed using Homebrew?
@@ -199,11 +201,34 @@ CMD echo Hello, World!</pre>
       It is common to create multiple images that use the same base image.
       Base images can be used by multiple custom images.
     </p>
+
     <p>
       Now lets create an image that outputs "Hello, World!" using Node.js.
       It uses the "chalk" npm package to output colored text.
       We are doing this to illustrate using npm packages from a Docker image.
-      Here is the JavaScript code from a file named <code>index.js</code>.
+    </p>
+
+    <p>
+      Here is the <code>package.json</code> file that describes dependencies.
+      It can also specify a "script" for running the application.
+    </p>
+    <pre class="brush: plain">
+{
+  "name": "chalk-demo",
+  "version": "1.0.0",
+  "description": "a Hello World app that uses the chalk npm package",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^1.1.3"
+  }
+}</pre>
+
+    <p>
+      Here is the JavaScript code from the file <code>index.js</code>.
     </p>
     <pre class="brush: plain">
 const chalk = require('chalk');
@@ -214,25 +239,6 @@ const chalk = require('chalk');
 // The third value (at index 2) is the first command-line argument.
 const name = process.argv[2] || 'World';
 console.log('Hello, ' + chalk.red.bold(name) + '!');</pre>
-
-    <p>
-      We need a package.json file to describe dependencies,
-      and it can also specify a "script" for running the application.
-    </p>
-    <pre class="brush: plain">
-{
-  "name": "chalk-demo",
-  "version": "1.0.0",
-  "description": "Demonstrates use of the chalk npm package",
-  "main": "index.js",
-  "scripts": {
-    "start": "node index.js"
-  },
-  "license": "MIT",
-  "dependencies": {
-    "chalk": "^1.1.3"
-  }
-}</pre>
 
     <p>
       To run this Node application outside of Docker
@@ -288,7 +294,83 @@ CMD ["npm", "--silent", "start"]</pre>
       Now lets create an image that runs an Express server using Node.js.
     </p>
     <p>
-      TODO: ADD THIS!
+      Here is the <code>package.json</code> file that describes dependencies.
+      It can also specify a "script" for running the application.
+    </p>
+    <pre class="brush: plain">
+{
+  "name": "express-demo",
+  "version": "1.0.0",
+  "description": "a Hello World Express app",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.14.0"
+  }
+}</pre>
+
+    <p>
+      Here is the JavaScript code from the file <code>index.js</code>.
+    </p>
+    <pre class="brush: plain">
+const express = require('express');
+
+const app = express();
+
+app.get('/hello', (req, res) => {
+  const name = req.query.name || 'World';
+  res.send(`Hello, ${name}!`);
+});
+
+const port = 3000;
+app.listen(port, () => console.log('listening on port', port));</pre>
+
+    <p>
+      To run this Node application outside of Docker
+      enter <code>npm start</code>
+      and browse <code>localhost:3000/hello?name={your-first-name}</code>.
+    </p>
+
+    <p>
+      Here is a Dockerfile that describes the image to be built.
+    </p>
+    <pre class="brush: plain">
+FROM node:7.4-onbuild
+EXPOSE 3000</pre>
+    <p>
+      To build this image, enter: <code>docker build -t express-demo .</code>
+    </p>
+    <p>
+      When a container expose ports using the EXPOSE instruction,
+      these ports are only available to processes running in the container.
+      To use them outside of the container (in the host),
+      they must be mapped to a host port.
+      This is specified with the <code>--publish</code> or <code>-p</code> option.
+      For example, <code>-p 3001:3000</code> specifies that port 8080
+      inside the container is mapped to the host port 3000.
+      The same port number can be used for both if
+      the container port isn't already in use on the host.
+    </p>
+    <p>
+      To run this image in a container, enter:
+      <code>docker run -d -p 3000:3000 express-demo</code>
+      The <code>-d</code> option causes the container
+      to run in the background (detached mode).
+      Do not include the <code>--rm</code> option when using this.
+    </p>
+    <p>
+      To output log messages from container enter:
+      <code>docker logs {container-id-prefix}</code>.
+      This is a great way to diagnose issues.
+    </p>
+    <p>
+      When a container is not running in detached mode, it cannot be
+      stopped by pressing ctrl-c in the terminal where it is running.
+      To stop a running container enter:
+      <code>docker stop {container-id-prefix}</code>
     </p>
 
     <h3>Dockerfile contents</h3>
@@ -372,6 +454,7 @@ ENV animal giraffe</pre>
 
     <h3>Base images</h3>
     <p>
+      TODO:
     </p>
 
     <h4>Creating images</h4>
@@ -532,6 +615,8 @@ docker rmi -f $(docker images -q)</pre>
 
     <h4>Opening a shell inside a running container</h4>
     <p>
+      To interact with a running container,
+      open a shell inside it where commands can be entered.
     </p>
     <pre class="brush: plain">
       docker exec -it {container-id} /bin/sh</pre>
@@ -540,8 +625,8 @@ docker rmi -f $(docker images -q)</pre>
     </p>
     <pre class="brush: plain">
 #!/bin/bash
-# Removes all containers.
-docker rm $(docker ps -qa)</pre>
+# Removes all containers, including running ones.
+docker rm -f $(docker ps -qa)</pre>
 
     <h3>Volumes</h3>
     <p>
@@ -582,6 +667,7 @@ docker rm $(docker ps -qa)</pre>
 
     <h3>Summary</h3>
     <p>
+      TODO:
     </p>
   </body>
 </html>
