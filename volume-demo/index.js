@@ -12,4 +12,3 @@ fs.writeFile(filePath, data, err => {
     console.log('read got:', buf.toString());
   });
 });
-

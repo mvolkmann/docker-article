@@ -265,7 +265,7 @@ console.log('Hello, ' + chalk.red.bold(name) + '!');</pre>
     <p>
       To run this Node application outside of Docker
       with no excess output from npm,
-      enter "npm -s start".
+      enter: <code>npm -s start</code>
       Note how "World" is output in red.
     </p>
 
@@ -312,7 +312,7 @@ CMD ["npm", "--silent", "start"]</pre>
     </p>
     <p>
       To run this image, but not retain the container in which it runs,
-      enter <code>docker run -t --rm node-demo</code><br>
+      enter: <code>docker run -t --rm node-demo</code><br>
       The <code>-t</code> option tells Docker to run the image in a pseudo-TTY
       which is able to process the ANSI escape codes
       output by the <code>chalk</code> package to produce colored text.
@@ -325,6 +325,70 @@ CMD ["npm", "--silent", "start"]</pre>
       specified in <code>Dockerfile</code> and <code>index.js</code>,
       add "<code>-e name={value}</code>" to the <code>docker run</code> command.
       For example, <code>docker run -t --rm -e name=Mark node-demo</code>
+    </p>
+
+    <h4>Volume example</h4>
+    <p>
+      Now let's create an image that writes and reads files on the host.
+    </p>
+    <p>
+      Here is the <code>package.json</code> file.
+      This example has no dependencies.
+    </p>
+    <pre class="brush: plain">
+{
+  "name": "volume-demo",
+  "version": "1.0.0",
+  "description": "demonstrates reading and writing text files",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "license": "MIT"
+}</pre>
+
+    <p>
+      Here is the JavaScript code from the file <code>index.js</code>.
+    </p>
+    <pre class="brush: javascript">
+const fs = require('fs');
+const filePath = '/data/test.txt';
+
+const data = 'Hello, World!';
+fs.writeFile(filePath, data, err => {
+  if (err) throw err;
+
+  console.log('write was successful');
+
+  fs.readFile(filePath, (err, buf) => {
+    if (err) throw err;
+    console.log('read got:', buf.toString());
+  });
+});</pre>
+
+    <p>
+      Here is the Dockerfile that describes the image to be built.
+    </p>
+    <pre class="brush: plain">
+FROM node:7.4-onbuild
+CMD ["npm", "start"]
+</pre>
+
+    <p>
+      To build the Docker image enter: <code>docker build -t volume-demo .</code><br>
+    </p>
+    <p>
+      To run this image,
+      enter: <code>docker run --rm -v $HOME/data:/data volume-demo</code><br>
+      The <code>-v</code> option tells Docker to
+      map the container directory <code>/data</code>
+      to the host directory <code>data</code>
+      under your home directory.
+    </p>
+    <p>
+      After running this, a file named <code>test.txt</code> will exist
+      in <code>$HOME/data</code> directory and it will contain
+      "<code>Hello, World!</code>".
     </p>
 
     <h4>Express example</h4>
@@ -368,7 +432,7 @@ app.listen(port, () => console.log('listening on port', port));</pre>
 
     <p>
       To run this Node application outside of Docker
-      enter <code>npm start</code><br>
+      enter: <code>npm start</code><br>
       and browse <code>localhost:3000/hello?name={your-first-name}</code>.
     </p>
 
@@ -643,12 +707,12 @@ docker rmi -f $(docker images -q)</pre>
 
     <h4>Deleting containers</h4>
     <p>
-      To delete specific containers enter "docker rm {container-ids}".
+      To delete specific containers enter: <code>docker rm {container-ids}</code><br>
       A space-separated list of container id prefixes can be specified.
       Each id prefix must uniquely match a single container.
     </p>
     <p>
-      To delete all containers enter "docker rm $(docker ps -qa)".
+      To delete all containers enter: <code>docker rm $(docker ps -qa)</code>
     </p>
 
     <h4>Opening a shell inside a running container</h4>
