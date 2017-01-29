@@ -475,6 +475,141 @@ EXPOSE 3000</pre>
       <code>docker stop {container-id-prefix}</code>
     </p>
 
+    <h3>Amazon EC2</h3>
+    <p>
+      From the Amazon EC2 website,
+      "Amazon Elastic Compute Cloud (Amazon EC2) is a web service
+      that provides resizable compute capacity in the cloud.
+      It is designed to make web-scale cloud computing easier for developers."
+    </p>
+    <p>
+      In the next section we will walk through the steps to
+      run a Docker image in a container within an EC2 instance.
+      To prepare for that, this section provides the steps
+      to create a free EC2 account.
+      Skip the rest of this section if you already have an EC2 account.
+    </p>
+    <ol>
+      <li>Browse <a href="https://amazon.com/ec2" target="_blank">https://amazon.com/ec2</a></li>
+      <li>Click the "Create an AWS Account" button.</li>
+      <li>Enter your email address.</li>
+      <li>Select the "I am a new user" radio button.</li>
+      <li>Press the "Sign in using our secure server" button.</li>
+      <li>Enter the requested information.</li>
+      <li>Press the "Create account" button.</li>
+      <li>Enter contact information and
+        check the "AWS Customer Agreement" checkbox.</li>
+      <li>Press the "Create Account and Continue" button.</li>
+      <li>Enter credit card information.
+        You will only be charged if your usage exceeds certain limits
+        after the trial period ends.</li>
+      <li>Press the "Continue" button.</li>
+      <li>Enter your telephone number.</li>
+      <li>Press the "Call Me Now" button.</li>
+      <li>You will receive a phone call.  On your phone, enter
+        the PIN number that is displayed in the browser.</li>
+      <li>Press the "Continue to select your Support Plan" button.</li>
+      <li>Select the "Basic" radio button.</li>
+      <li>Press the "Continue" button.</li>
+    </ol>
+    <p>
+      The next step is to get access and secret keys.
+    </p>
+    <ol>
+      <li>From the "My Account" menu in the upper-right,
+        select "Security Credentials".</li>
+      <li>Sign in using your new account.</li>
+      <li>Press the "Continue to Security Credentials" button.</li>
+      <li>Click "Access Keys (Access Key ID and Secret Access Key)".</li>
+      <li>Press the "Create New Access Key" button.</li>
+      <li>Press the "Download New Key" button.</li>
+      <li>This downloads a file named "rootkey.csv" in the Downloads directory.
+        It contains your access key and secret key.
+        Move this file to a place you'll remember to look for it later,
+        like in a directory named "Amazon-AWS".</li>
+    </ol>
+
+    <h3>Docker Machine</h3>
+    <p>
+      Docker Machine makes it easy to use Docker in cloud provider instances.
+      We'll walk through the steps to create an instance on Amazon EC2.
+      This section assumes you already have an AWS account.
+    </p>
+    <ul>
+      <li>
+        Install Docker Machine by following the instructions at
+        <a href="https://docs.docker.com/machine/install-machine" target="_blank">https://docs.docker.com/machine/install-machine</a>.
+      </li>
+      <li>
+        Create a Docker-aware Amazon EC2 instance
+        by entering the following commands.
+        We will use the instance name "aws-sandbox".
+        That should be substituted in place of all occurrences of
+        {instance-name} below.<br>
+        <code>
+        docker-machine create --driver amazonec2 \<br>
+          --amazonec2-access-key={access-key} \<br>
+          --amazonec2-secret-key={secret-key} \<br>
+          --amazonec2-region={region} \<br>
+          {instance-name}
+        </code><br>
+        The values for <code>access-key</code> and <code>secret-key</code>
+        can be obtained from the <code>rootkey.csv</code> file
+        that was downloaded in the previous section.
+        The value for region will be similar to "us-west-2".</li>
+        This command populates the
+        <code>~/.docker/machine/machines/{instance-name}</code> directory
+        with several <code>.pem</code> files and more.
+        It will take several minutes to complete.
+      </li>
+      <li>Enter: <code>eval $(docker-machine env {instance-name})</code><br>
+        This sets four Docker-related environment variables that cause
+        subsequent "<code>docker</code>" commands to run on the AWS instance
+        instead of locally.
+        The environment variables are <code>DOCKER_CERT_PATH</code>,
+        <code>DOCKER_HOST</code>, <code>DOCKER_MACHINE_NAME</code>,
+        and <code>DOCKER_TLS_VERIFY</code>.
+        Unset these environment variables later
+        to return to using Docker locally.</li>
+    </ul>
+    <p>
+      To list the current Docker Machine instances enter:
+      <code>docker-machine ls</code>
+    </p>
+    <p>
+      To get the IP address of an instance enter:
+      <code>docker-machine ip {instance-name}</code>
+    </p>
+    <p>
+      Use the normal docker commands to build images
+      and run them in containers within the AWS instance.
+      For example, to build and run our <code>express-demo</code>,
+      cd to its directory and enter these commands:<br>
+      <code>docker build -t express-demo .</code><br>
+      <code>docker run -d -p 3000:3000 express-demo</code><br>
+    </p>
+    <p>
+      To test this app running in the AWS instance,
+      browse <code>http://{instance-ip-address}:3000/hello</code>.
+      TODO: Why doesn't the server respond?
+    </p>
+    <p>
+      To stop a running instance enter
+      <code>docker-machine stop {instance-name}</code>
+    </p>
+    <p>
+      To restart a running instance enter
+      <code>docker-machine restart {instance-name}</code>
+    </p>
+    <p>
+      To remove a stopped instance enter
+      <code>docker-machine remove {instance-name}</code>
+    </p>
+    <p>
+      To ssh into an instance enter:
+      <code>docker-machine ssh {instance-name}</code>
+    </p>
+
     <h3>Dockerfile contents</h3>
     <p>
       Dockerfiles contain instructions that describe an image to be built.
