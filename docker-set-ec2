@@ -1,0 +1,10 @@
+#!/bin/bash
+# To run this, enter: . ./docker-set-ec2
+# This takes almost 10 seconds to complete.
+# This sets environment variables set that cause docker commands
+# to operate on images and containers in an EC2 instance
+# rather than local images and containers.
+# To undo this, run the docker-unset-ec2 script.
+
+echo "This takes ~ 10 seconds to complete."
+eval $(docker-machine env docker-instance)

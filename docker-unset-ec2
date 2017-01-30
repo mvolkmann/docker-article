@@ -1,0 +1,12 @@
+#!/bin/bash
+# To run this, enter: . ./docker-unset-ec2
+# This unsets the environment variables set by running:
+# eval $(docker-machine env {instance-name})
+# It causes docker commands affect local images and containers
+# rather than ones in a cloud provider instance (like EC2).
+# To return to using EC2, run the docker-set-ec2 script.
+
+unset DOCKER_CERT_PATH
+unset DOCKER_HOST
+unset DOCKER_MACHINE_NAME
+unset DOCKER_TLS_VERIFY

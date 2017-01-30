@@ -592,6 +592,9 @@ EXPOSE 3000</pre>
       To test this app running in the AWS instance,
       browse <code>http://{instance-ip-address}:3000/hello</code>.
       TODO: Why doesn't the server respond?
+      You should also be able to test this by running<br>
+      <code>docker run -d -p 8000:80 --name webserver kitematic/hello-world-nginx</code><br>
+      and browsing {ip-address}:8000, but that doesn't work either!
     </p>
     <p>
       To stop a running instance enter
